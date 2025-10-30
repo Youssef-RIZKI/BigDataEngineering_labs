@@ -1,0 +1,110 @@
+Before kicking things off, take few minutes to watch this video,it is a great intro to the hadoop ecosystem : 
+[https://youtu.be/aReuLtY0YMI]
+
+Before you dive in, take a moment to check out this video, it is a great introduction to the Hadoop ecosystem.
+
+PART 1: SETTING DEVELOPMENT ENVIRONMENT 
+    1. Start the 3 containers : 
+        -- hadoop-master 
+        -- hadoop-slave1 
+        -- hadoop-slave2
+    2. Access to the bash of the hadoop-master container.
+    3. start hadoop and yarn.(./start-hadoop.sh)
+    4. Prerequisites Installing : 
+        Istall JDK or OpenJdk, then verify :
+            -java -version 
+            -javac -version
+        Install Maven, then verify :
+            - mvn -version 
+    5. Install the 2 following vs code extensions : 
+        - extension pack for java 
+        - Maven for java 
+PART 2 : PROGRAMMING WITH HDFS API:
+    -----------------------------------------------------------
+    --- EXAMPLE 1 : GET METADATA OF A FILE ON HDFS ------------
+    -----------------------------------------------------------
+    1. create a maven project : 
+        1. right click in the explorer tab: 
+        2. click Maven > new project > noArchetype 
+        3. type etu.ensias.hadoop then hit enter (you are specifying the group id)
+        4. type bigdatalabs then hit enter (you have specified the ArtifactID)
+    2. change the pom.xml package properties and dependencies.
+    3. Run the maven package (Main.java). you can see this video [https://www.youtube.com/watch?v=rqGRW-ocYpY]
+    4. create a java package hfdslab inside the java/edu/ensias/hadoop folder.
+    5. create a java file inside the hdfslab package, with the code offerred by the professor with little modifications :
+        - add of the package specification in the java file (package edu.ensias.hadoop.hdfslab;)
+        - replace the variable status with infos.
+        - pay attention to missing semi-columns ';'(IT'S JAVA BROO!!)
+    6.Modify the pom.xml file :
+        <mainClass>edu.ensias.hadoop.hdfslab.HadoopFileStatus</mainClass> : set the edu.ensias.hadoop.hdfslab.HadoopFileStatus as the main class.
+        <finalName>HadoopFileStatus</finalName> : Name the output JAR as HadoopFileStatus.jar
+    7.in the terminal, please navigate to the folder that contains the pom.xml file:
+        - execute the command : mvn clean package
+        - after that, automatically a jar file will be generated in the target/ folder in the maven project.
+    8. copy the generated jar in the  /hadoop_project folder created in the lab_0
+    9. In the shell of the hadoop-master container :
+        - tap the command : Hadoop jar /shared_volume/<jar_file_name>.jar
+        
+        N.B: please make sure your are running the 3 containers (the master and the 2 slaves)
+            and you started hadoop(./start-hadoop.sh)
+        \--> the PART 1
+
+        - make sure that in the hadoop file system the name of the file purchases.txt have changed to achats.txt
+    10. to make this program able to take the path and the name of the file from the user : 
+        pass args[0] as the first argument, and the args[1] to Path(), as demonstrated bellow:
+            Path filepath = new Path(chemin_fichier, nom_fichier);
+        and here is to to pass these two argument during the jar call :
+        hadoop jar /shared_volume/HadoopFileStatus.jar /user/root/input purchases.txt achats.txt
+
+        N.B: make sure to rename the /user/root/input/achats.txt to purchases.txt, because it is changed before by the fist program.
+            hdfs dfs -mv /user/root/input/achats.txt /user/root/input/purchases.txt
+
+    -----------------------------------------------------------
+    ------- EXAMPLE 2: READ A FILE ON HDFS --------------------
+    -----------------------------------------------------------
+    1. in the packge java/edu/ensias/hadoop create a ReadHDFS.java file.
+    2. modify the pom.xml file.
+    3. In order to genrate the new jar, make sure to clean the mvn package with the command : mvn clean package
+    4. copy the jar file in the /hadoop_project so the master container could access to it.
+    5. execute the jar in hadoop as explainer in thE FIRST EXAMPLE.
+        - Make sure that the path of file to read is correct. (folder and name)
+    6. modify the java file so it takes the path to the file to read as an argument and should be read at once not line by line.
+    public class ReadHDFS {        .
+            .
+            .
+        String line = null;
+        StringBuilder content = new StringBuilder();
+        while ((line = br.readLine()) != null) {
+            content = content.append(line).append('\n');
+        }
+        System.out.println(content);
+    }
+    7. in the bash of the hadoop-master, execute the command :  hadoop jar /shared_volume/ReadHDFS.jar /user/root/input/purchases.txt 
+
+
+    -----------------------------------------------------------
+    ------- EXAMPLE 3:WRITE A FILE ON HDFS --------------------
+    -----------------------------------------------------------
+    1. in the packge java/edu/ensias/hadoop create a WriteHDFS.java file.
+    2. modify the pom.xml file. (mainClass and finalName tags)
+    3. In order to genrate the new jar, make sure to clean the mvn package with the command : mvn clean package
+    4. copy the WriteHDFS.jar file to the /hadoop_project so the master container could access to it.
+    5. execute the jar in hadoop using the command: hadoop jar /shared_volume/bonjour.txt 
+        
+
+PART 3: PROGRAMMING WITH MAP-REDUCE API 
+    1. Create the three classes (TokenizerMapper.java, IntSumReducer.java and WordCount.java) 
+    - modify the pom file to make the WordCount is the mainClass
+    - clean the package : 'mvn clean package'
+    - copy the result jar file to the Bind mount (hadoop_project) so to make it visible in the /shared_volume
+    - run the jar file in the master bash  'hadoop jar /shared_volume/WordCount.jar ./web_input/alice.txt ./output '
+    - afterward, two files will be generaed in the output file : 
+        -rw-r--r--   2 root supergroup          0 2025-10-19 15:23 output/_SUCCESS
+        -rw-r--r--   2 root supergroup      28023 2025-10-19 15:23 output/part-r-00000  : is the file that contains the final result of mapping and reducing.
+
+PART 4: MapReduce avec python
+
+    
+
+
+

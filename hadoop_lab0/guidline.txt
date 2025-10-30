@@ -1,0 +1,30 @@
+1. Start all the containers using the docker compose yamlfile : 
+    -- docker compose up -d 
+2. access to the hadoop-master container in the bash mode : 
+    -- docker exec -it hadoop-master bash
+    it's like using the bash of the container that sees itself as a machine.
+3. In the bash mode, run the hadoop ecosystem (the dfs and the yarn) using a shell predefined:
+    -- ./start-hadoop.sh 
+    -- cat : ./start-hadoop.sh
+        |--> $HADOOP_HOME/sbin/start-all.sh
+        |--> ~#echo $HADOOP_HOME : /usr/local/hadoop/
+        |-> this is the path where hadoop is installed.
+4. tell hadoop to create the folder input inside his dfs.
+    -- hdfs dfs -mkdir /input
+5. list the content of the distiributed file system of Hadoop: 
+    -- hdfs dfs -ls -R -h: at the beginning, it's empty.
+6. Push the file purchases.txt in the shared volume to the hdfs.
+    -- hdfs dfs -put /shared_volume/purchases.txt .
+7. to verity if the file is truely copied : 
+    -- hdfs dfs -ls . (/user/root)
+    -- you can also cat and tail the pruchases.txt file.
+8. get the file purchases.txt from the hdfs to the shared-volume (the local) with the name achats.txt.
+    -- hdfs dfs -get ./purchases.txt /shared_volume/achats.txt
+9.download the file alice.txt from the web to the local host.#
+    -- wget <url_to_alice.txt>
+    -- this file will be placed /root the container file system specifically the hadoop-master fs.
+10.Copy the alice file to the host-mounted directory (/shared_volume)
+    -- cp alice.txt /shared_volume/alice.txt
+11.push the alice file to hdfs : 
+    -- hdfs dfs -put /shared_volume/alice.txt .
+

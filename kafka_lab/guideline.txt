@@ -1,0 +1,47 @@
+1. Installing kafka : 
+    kafka is preinstalled in the cluster created in the first lab.
+
+2.Using Apache kafka : 
+    a)create the topic hello-kafka in the broker localhost:9092  
+        --> kafka-topics.sh --create --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1 --topic Hello-Kafka
+
+        list topics that I have in the broker : 
+        --> kafka-topics.sh --bootstrap-server localhost:9092 --list
+
+        describe a topic :
+        --> kafka-topics.sh --bootstrap-server localhost:9092 --describe <topic_name>
+
+        delete a topic :
+        --> kafka-topics.sh --bootstrap-server localhost:9092 --delete <topic_name>
+    c) Write in a topic: 
+        Using the console, write in the hello-kafka topic  
+        --> kafka-console-producer.sh --bootstrap-server localhost:9092 -topic hello-kafka
+    d) Read from a console: 
+        --> kafka-console-consumer.sh --bootstrap-server localhost:9092 -topic hello-kafka --from-beginning
+3. Create a kafka application: 
+    1.create a maven project 
+    2.create a producer(EventProducer.java) 
+    3.execute the jar in the master bash.
+        -->  hadoop jar /shared_volume/kafka/kafka-producer-app-jar-with-dependencies.jar  hello-kafka
+    4.Read from the topic using the kafka default consumer: 
+        --> kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic hello-kafka --from-beginning 
+    5.creat a consumer (EventConsumer.java)
+    6.After executing the jar producer, execute the jar consumer.
+4.Create a streaming pipeline usign kafka source and sink connectors:
+    ------------------------------------------------------------------------
+    source --> source connector --> Kafka topic --> sink connector -->  Sink 
+    test-source.txt --> File source connector --> Kafka topic(connect-topic) --> File sink connector -->  test-sink.txt 
+    ------------------------------------------------------------------------
+    1.modify the file config/connect-standalone.properties
+        -->echo "plugin.path=/usr/local/kafka/libs/" >> $KAFKA_HOME/config/connect-standalone.properties
+    2. Create the topic : connect-topic
+        --> kafka-topics.sh --bootstrap-server localhost:9092 --create --topic connect-topic --replication-factor 1 --partitions 1
+    3. kafka-topics.sh --bootstrap-server localhost:9092 --list 
+    4. create the source file : 
+        --> echo "bonjour kafka" > /tmp/test-source.txt
+    5. Start kafka in the standalone mode: 
+        --> $KAFKA_HOME/bin/connect-standalone.sh 
+            $KAFKA_HOME/config/connect-standalone.properties 
+            $KAFKA_HOME/config/connect-file-source.properties 
+            $KAFKA_HOME/config/connect-file-sink.properties
+                
