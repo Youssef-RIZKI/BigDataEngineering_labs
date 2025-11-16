@@ -103,8 +103,3 @@ PART 3: PROGRAMMING WITH MAP-REDUCE API
         -rw-r--r--   2 root supergroup      28023 2025-10-19 15:23 output/part-r-00000  : is the file that contains the final result of mapping and reducing.
 
 PART 4: MapReduce avec python
-
-    
-
-
-

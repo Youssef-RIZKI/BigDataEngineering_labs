@@ -53,6 +53,23 @@ services:
       - KAFKA_CLUSTERS_0_ZOOKEEPER=hadoop-master:2181 
     tty : True 
     stdin_open : True
+  
+  hive-server:
+    image: apache/hive:4.0.0-alpha-2
+    container_name: hive-server
+    hostname: hive-server
+    ports:
+      - "10000:10000"  # JDBC port
+      - "10002:10002"  # Web UI port
+      - "9083:9083"    # Metastore port
+    volumes:
+      - ./hadoop_project:/shared_volume
+    environment:
+      - SERVICE_NAME=hiveserver2
+    networks:
+      - hadoop-net
+    tty: true
+    stdin_open: true
 
     
 networks:
