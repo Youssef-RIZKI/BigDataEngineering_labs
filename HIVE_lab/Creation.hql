@@ -14,7 +14,7 @@ STORED AS TEXTFILE;
 
 
 -----------------------------------------------------------------------------
--- la creation de la table reservations partionnee par la colonne date_debut 
+-- la creation de la table reservations et reservaition_partitioned 
 -----------------------------------------------------------------------------
 CREATE TABLE reservations(
     reservation_id INT,
@@ -40,21 +40,6 @@ FIELDS TERMINATED BY ','
 STORED AS TEXTFILE;
 
 
-
-
------------------------------------------------------------------------------
---la creation de la table hotels partionne 
------------------------------------------------------------------------------
-CREATE TABLE hotels_partitioned (
-    hotel_id INT,
-    nom STRING,
-    etoiles INT
-)
-PARTITIONED BY (ville STRING)
-ROW FORMAT DELIMITED
-FIELDS TERMINATED BY ','
-STORED AS TEXTFILE;
-
 --la creation de la table reservations Bucketed 
     CREATE TABLE reservations_bucketed (
         reservation_id INT,
@@ -69,3 +54,30 @@ STORED AS TEXTFILE;
     FIELDS TERMINATED BY ','
     STORED AS TEXTFILE;
  
+
+
+
+-----------------------------------------------------------------------------
+--la creation de la table hotels et hotels_partitioned
+-----------------------------------------------------------------------------
+CREATE TABLE hotels (
+    hotel_id INT,
+    nom STRING,
+    ville STRING,
+    etoiles INT
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE;
+
+
+CREATE TABLE hotels_partitioned (
+    hotel_id INT,
+    nom STRING,
+    etoiles INT
+)
+PARTITIONED BY (ville STRING)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE;
+
