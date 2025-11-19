@@ -1,0 +1,121 @@
+1.start the cluster : 
+    -- docker start hadoop-master hadoop-slave1 hadoop-slave2
+2. open the master's bash: 
+    -- docker exec -it hadoop-master bash
+3.Start hadoop : 
+    -- ./start-hadoop.sh
+4.Run Hbase : 
+    -- /usr/local/hbase/bin/start-hbase.sh
+5. verify if these sevices are run good.
+
+----------------------------------------------------------------------------------
+
+1. create a table 'sales_ledger' with two families 'customer' and 'sales' 
+    -- create 'sales_ledger', 'customer', 'sales'
+
+2. list all tables : 
+    --list 
+
+3. insert rows into this table : 
+    -- put 'table', id, 'family:column',value
+
+    put 'sales_ledger','101','customer:name','John White'
+    put 'sales_ledger','101','customer:city','Los Angeles, CA'
+    put 'sales_ledger','101','sales:product','Chairs'
+    put 'sales_ledger','101','sales:amount','$400.00'
+
+4. select all rows of the table 'sales_ledger'
+    - scan 'sales_ledger'.
+5. select a row based on his id 
+    -- get 'sales_ledger', 101
+6. select the values of a column in a row with his id  : 
+    -- get 'sales_ledger',103,{COLUMN =>'sales:product'}
+
+-----------------------------------------------------------------------------------
+-------- HBASE FILTERS -----------------------------------------------------------  
+-----------------------------------------------------------------------------------
+
+1 Row filter: 
+    scan 'sales_ledger', {FILTER => "RowFilter (>,'binary:102')"}  -- be carefull to the spaces 
+
+2. Family Filter 
+    scan 'sales_ledger', {FILTER=> "FamilyFilter(!=, 'binary:customer')"}
+
+3.Column Filter (QualifierFilter) : select product from sales_ledger
+    scan 'sales_ledger', {FILTER=> "QualifierFilter(=, 'binary:product')"}
+4. Value Filter:
+    scan 'sales_ledger', {FILTER=> "ValueFilter(=, 'substring:Desk')"}
+5.Single column value filter : -- select * from sales_ledger where product like '%Desk%'
+    scan 'sales_ledger', {FILTER=>"SingleColumnValueFilter('sales', 'product', =, 'substring:Desk')"}
+6.Prefix Filter : select * from sales_ledger where id like '10%'
+    -- scan 'sales_ledger' : {FILTER=> "PrefixFilter('10)"}
+7. Page Filter : limit the number of raws returned 
+    --scan 'sales_ledger', {FILTER =>"PageFilter(2)"}
+    -- scan 'sales_ledger', {LIMIT => 10}
+
+
+-----------------------------------------------------------------------------------
+-------- HBASE API
+-----------------------------------------------------------------------------------
+in the user working directory let's create the project's folder: 
+1.mkdir ~/hbase-code 
+2.cd hbase-code 
+3.mkdir out -- to store the .class file generated 
+4.create the classe HelloHBase.java usign the command vim 
+5.complile the HelloHBase.java class with the command: 
+    -- javac -cp "/usr/local/hbase/lib/*" -d  ./out ./HelloHBase.java
+6.Run the class file using the command 
+    -- java -cp "./out:/usr/local/hbase/lib/*" HelloHBase 
+6.check if the table is successfully created.
+    -- list (you have to see the user table)
+
+
+------------------------------------------------------------------------------------
+------------- FILE LOADING FROM HDFS TO HBASE 
+------------------------------------------------------------------------------------
+1.for each row in the purchases.txt file, add a row number at the beginning, then put the result at new file named purchases2.txt 
+    Get-Content purchases.txt | ForEach-Object -Begin {$i=1} -Process {
+        "$i`t$_"
+        $i++
+    } > purchases2.txt
+
+2.put the purchases2.txt file in the input folder in hdfs.
+    First, make sure to have the file purchases2.txt encoded in utf-8
+        -- file purchases2.txt 
+    if this is not the case then type this command:
+        -- iconv -f UTF-16 -t UTF-8 /shared_volume/purchases2.txt -o /shared_volume/purchases2_utf8.txt 
+        drop the old file and rename the new one to purchases2.txt 
+    then, load the file to hdfs using the commad:
+        -- hdfs dfs -put /shared_volume/purchases2.txt ./input
+3.using the ImportTsv command load the content of the file purchases2.txt into the hbase table products
+    hbase org.apache.hadoop.hbase.mapreduce.ImportTsv \
+    -libjars /usr/local/hbase/lib/commons-lang-2.6.jar \
+    -Dimporttsv.columns=HBASE_ROW_KEY,cf:date,cf:time,cf:town,cf:product,cf:price,cf:payment \
+    products /user/root/input/purchases2.txt
+4. list the content of the products table : 
+    -- scan 'products'
+    -- get 'products',8,{COLUMN =>'cf:town'}
+    cf:town                                        timestamp=1763459920699, value=New York
+    
+------------------------------------------------------------------------------------
+------------- DATA PREPROCESSING WHITH SPARK  
+------------------------------------------------------------------------------------
+
+in the user working directory let's create the project's folder: 
+1.mkdir ~/hbase-spark-code 
+2.cd hbase-code 
+3.mkdir out -- to store the .class file generated 
+4.create the classe HBaseSparkProcess.java using the command vim 
+5.compile the HelloHBase.java class with the command: 
+    -- javac -cp "$HBASE_HOME/lib/*:$SPARK_HOME/jars/*" -d ./out ./HbaseSparkProcess.java 
+6.Package into a jar :  
+    -- jar cvf processing-hbase.jar -C out/ .
+7.Prepare the spark environment : 
+    -- cp -r $HBASE_HOME/lib/* $SPARK_HOME/jars
+
+8.Execute the jar using the spark command spark-submit 
+    -- spark-submit --class HbaseSparkProcess --master yarn --deploy-mode client processing-hbase.jar
+
+
+
+
